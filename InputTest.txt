@@ -1,0 +1,15 @@
+class myClass{
+	int a;
+	float b;
+};
+program{
+	int x;
+	int a;
+	myClass y;
+	a = 0;
+	x = 1;
+	if(x>0) then 
+		put(x);
+		else put(a);
+	;
+};

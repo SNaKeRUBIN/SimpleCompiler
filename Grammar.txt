@@ -1,0 +1,93 @@
+prog                  : #GlobalTable classDecl_rep progBody 
+classDecl             : class #InsChar #Push id #ClassTable { varDeclFunctDef_rep } #Scope ; 
+progBody              : program #ProgramTable funcBody #StopHereProgramEnd ; funcDef_rep 
+funcDef               : #InsChar #Push type #Push id #Push ( fParams #Push ) #FunctionTable funcBody #StopHereFunctionEnd ; 
+funcBody              : { funcBody_lrecursion } #Scope
+varDeclFunctDef_rep   : #InsChar #Push type #Push id varDeclFunctDef_fact 
+varDeclFunctDef_rep   : EPSILON 
+varDeclFunctDef_fact  : #InsChar #Push ( fParams #Push ) #FunctionTable funcBody ; varDeclFunctDef_rep 
+varDeclFunctDef_fact  : arraySize_rep #VariableEntry ; varDeclFunctDef_rep 
+indiceIdnestList_fact : #Push . #Push id indiceIdnestList_fact 
+indiceIdnestList_fact : #Push [ arithExpr #Push ] indiceIdnestList_fact 
+indiceIdnestList_fact : EPSILON 
+varDeclStatement_fact : #Push id arraySize_rep #VarTypeChk #VariableEntry ; funcBody_lrecursion
+varDeclStatement_fact : indiceIdnestList_fact #Push assignOp expr #StopHereAss #ChkScope ; statement_rep 
+funcBody_lrecursion   : #InsChar #Push typeNumber #Push id arraySize_rep #VariableEntry ; funcBody_lrecursion 
+funcBody_lrecursion   : #InsChar #Push id varDeclStatement_fact 
+funcBody_lrecursion   : restOfStatment statement_rep 
+funcBody_lrecursion   : EPSILON 
+statement             : assignmentStatment 
+statement             : restOfStatment 
+assignmentStatment    : variable_lrecursion #Push assignOp expr #StopHereAss #ChkScope ; 
+restOfStatment        : for ( #InsChar #Push type #Push id #VarTypeChk #ForLoopVar #VariableEntry #Push assignOp expr #StopHereAss ; #StopHereForCondition relExpr ; #StopHereForIterCode assignStat ) #StopHereForCode statBlock #StopHereForEnd ; 
+restOfStatment        : if ( expr ) then #StopHereIfThen statBlock else #StopHereIfElse statBlock #StopHereIfEnd ; 
+restOfStatment        : get ( variable_lrecursion #StopHereGet ) ; 
+restOfStatment        : put ( expr #StopHerePut ) ; 
+restOfStatment        : return ( expr #StopHereReturn ) ; 
+assignStat            : variable_lrecursion #Push assignOp expr #StopHereAss
+statBlock             : { statement_rep } 
+statBlock             : statement 
+statBlock             : EPSILON 
+expr                  : arithExpr exp_lrecursion 
+exp_lrecursion        : relOp arithExpr #StopHereRel
+exp_lrecursion        : EPSILON 
+relExpr               : arithExpr relOp arithExpr #StopHereRel
+arithExpr             : term arithExpr_lrecursion 
+arithExpr_lrecursion  : addOp term #StopHereAdd arithExpr_lrecursion 
+arithExpr_lrecursion  : EPSILON 
+sign                  : + 
+sign                  : - 
+term                  : factor term_lrecursion 
+term_lrecursion       : multOp factor #StopHereMul term_lrecursion 
+term_lrecursion       : EPSILON 
+factor                : #Push ( arithExpr #Push ) 
+factor                : #Push floatValue 
+factor                : #Push intValue
+factor                : #Push not factor #StopHereNot
+factor                : variable_lrecursion factor_lrecursion 
+factor                : #Push sign factor 
+variable_lrecursion   : #InsChar #Push id indice_rep idnest_rep_lrecursion 
+idnest_rep_lrecursion : idnest_lrecursion idnest_rep_lrecursion 
+idnest_rep_lrecursion : EPSILON 
+idnest_lrecursion     : #Push . #Push id indice_rep 
+factor_lrecursion     : #Push ( aParams #Push ) #FuncDefChk #StopHereFunction
+factor_lrecursion     : EPSILON 
+indice                : #Push [ arithExpr #Push ] 
+arraySize             : #Push [ #Push intValue #Push ] 
+type                  : id 
+type                  : typeNumber 
+typeNumber            : float 
+typeNumber            : int 
+fParams               : #Push type #Push id arraySize_rep fParams_fact_rep 
+fParams               : EPSILON 
+aParams               : expr aParams_fact_rep 
+aParams               : EPSILON 
+fParams_fact          : #Push , #Push type #Push id arraySize_rep 
+aParams_fact          : #Push , expr 
+classDecl_rep         : classDecl classDecl_rep 
+classDecl_rep         : EPSILON 
+funcDef_rep           : funcDef funcDef_rep 
+funcDef_rep           : EPSILON 
+statement_rep         : statement statement_rep 
+statement_rep         : EPSILON 
+arraySize_rep         : arraySize arraySize_rep 
+arraySize_rep         : EPSILON 
+indice_rep            : indice indice_rep 
+indice_rep            : EPSILON 
+fParams_fact_rep      : fParams_fact fParams_fact_rep 
+fParams_fact_rep      : EPSILON 
+aParams_fact_rep      : aParams_fact aParams_fact_rep 
+aParams_fact_rep      : EPSILON 
+assignOp              : = 
+relOp                 : #Push < 
+relOp                 : #Push <= 
+relOp                 : #Push <> 
+relOp                 : #Push == 
+relOp                 : #Push > 
+relOp                 : #Push >= 
+addOp                 : #Push + 
+addOp                 : #Push - 
+addOp                 : #Push or 
+multOp                : #Push * 
+multOp                : #Push / 
+multOp                : #Push and
